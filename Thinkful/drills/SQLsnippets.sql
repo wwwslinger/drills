@@ -137,3 +137,65 @@ FROM trips
 JOIN rainy_days
 ON rainy_days.Date == DATE(trips.start_date)
 ORDER BY trips.duration DESC
+
+
+-- 1.2.5
+UPDATE listings SET price = CAST(price AS INTEGER)
+
+-- Q1: What's the most expensive listing?  what can you tell about it?
+
+-- A: it's a three-way tie between a villa, a mansion, and a retreat center - two
+-- in Western Addition, one in seacliff.  They have zero, two, and ten reviews,
+-- respectively. The next highest is a Nob Hill penthouse.
+
+SELECT
+	id,
+	price,
+	name,
+	host_name,
+	neighbourhood,
+	room_type,
+	number_of_reviews,
+	reviews_per_month
+FROM listings
+ORDER BY price DESC
+LIMIT 10
+
+-- Q2: What neighborhoods seem to be most popular?
+-- A: Mission is the most popular with 1072 bookings per month. After that,
+-- Western Addition, Outer Sunset, and Castro/Upper Market are all clustered
+-- around 725, and then the averages drop to the 500s.
+SELECT
+	id,
+	price,
+	name,
+	neighbourhood,
+	room_type,
+	number_of_reviews,
+	reviews_per_month,
+	SUM(reviews_per_month) total_rpm
+FROM listings
+GROUP BY neighbourhood
+ORDER BY total_rpm DESC
+LIMIT 10
+
+-- Q3: What time of year is the cheapest time to go to your city? What about the busiest?
+
+-- A: The CHEAPEST time of year (by average price) is April, followed by March
+-- and May.  The MOST EXPENSIVE is July, followed by August and September.
+-- The BUSIEST, by number of reviews, is August, followed by October and September.
+SELECT
+	price,
+	strftime('%m', date) as "month",
+	AVG(CAST(substr(price, 2) AS NUMERIC)) av_price
+FROM calendarRaw
+WHERE length(price) > 1
+GROUP BY month
+ORDER BY av_price
+
+SELECT
+	strftime('%m', date) as "month",
+	COUNT(*) review_count
+FROM reviews
+GROUP BY month
+ORDER BY review_count DESC
