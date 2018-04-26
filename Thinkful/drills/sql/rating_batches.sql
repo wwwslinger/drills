@@ -1,12 +1,12 @@
-ALTER TABLE movieLens.ratings_short 
-ADD COLUMN month1 INT AFTER timestamp;
-UPDATE movieLens.ratings_short SET month1 = timestamp;
-/*
-MONTH(
-	CONVERT(
-		DATE_ADD(
-			'1970-01-01 00:00:00', INTERVAL movieLens.ratings_short.timestamp SECOND
-				), datetime
-			)
-		)
-*/
+WITH batch_counts AS (
+	SELECT
+    user_id,
+    day,
+	COUNT(*) as review_count
+	FROM joined_short
+    GROUP BY user_id, day
+
+SELECT *
+FROM joined_short
+WHERE review_count <= 2
+LEFT JOIN batch_counts ON joined_short.user_id = batch_counts.user_id AND joined_short.day = batch_counts.day
