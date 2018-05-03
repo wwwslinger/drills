@@ -199,3 +199,10 @@ SELECT
 FROM reviews
 GROUP BY month
 ORDER BY review_count DESC
+
+SELECT
+	userId,
+	AVG(rating) as "average rating",
+	COUNT as "number of ratings"
+FROM ratings
+GROUP BY userId
